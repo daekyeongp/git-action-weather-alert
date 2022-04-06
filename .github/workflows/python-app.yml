@@ -1,0 +1,41 @@
+name: waether_alert
+
+on:
+  schedule:
+    - cron: '0 23 * * *' # UST가 default. 즉 23:00은 한국 시간 08:00
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.7] # 파이썬 3.7 버전
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.7
+    
+    - name: Install python package # 파이썬 관련 패키지를 설치
+      run: |        
+        pip install selenium
+        pip install requests        
+        pip install pillow
+        pip install twython
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Install ubuntu package # 우분투 관련 패키지도 설치
+      run: |        
+        sudo apt-get install fonts-unfonts-core
+        sudo apt-get install fonts-unfonts-extra
+        wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add        
+        sudo apt-get install google-chrome-stable    
+        wget https://chromedriver.storage.googleapis.com/2.40/chromedriver_linux64.zip
+        unzip ./chromedriver_linux64.zip   
+      
+    - name: Run! # main.py 파일을 실행 
+      run: | 
+        python main.py
+      env:
+        MY_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
